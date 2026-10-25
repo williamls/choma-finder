@@ -4,6 +4,24 @@ const listEl = document.getElementById("list");
 const countEl = document.getElementById("count");
 
 let food = null; // selected food id, or null for all
+let areas = AREAS;
+let vendors = VENDORS; // sample data until the database answers
+
+async function loadData() {
+  if (!db) return;
+  const [a, l] = await Promise.all([
+    db.from("areas").select("name").order("sort").order("name"),
+    db.from("listings").select("*")
+  ]);
+  if (a.error || l.error) {
+    countEl.textContent = "Could not load vendors. Check your connection and refresh.";
+    areas = [];
+    vendors = [];
+    return;
+  }
+  areas = a.data.map(x => x.name);
+  vendors = l.data;
+}
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -21,9 +39,9 @@ function telHref(phone) {
 }
 
 function setupAreas() {
-  AREAS.forEach(a => areaSelect.append(new Option(a, a)));
+  areas.forEach(a => areaSelect.append(new Option(a, a)));
   const saved = localStorage.getItem("area");
-  if (saved && AREAS.includes(saved)) areaSelect.value = saved;
+  if (saved && areas.includes(saved)) areaSelect.value = saved;
   areaSelect.addEventListener("change", () => {
     localStorage.setItem("area", areaSelect.value);
     render();
@@ -66,6 +84,8 @@ function card(v) {
 
   const call = el("a", "call", "Call");
   call.href = telHref(v.phone);
+  // Count the tap; the call itself is not delayed or blocked.
+  call.addEventListener("click", () => { if (db) db.rpc("log_call", { vendor: v.id }); });
   c.append(call);
 
   const number = el("p", "number", v.phone);
@@ -88,20 +108,23 @@ function card(v) {
 
 function render() {
   const area = areaSelect.value;
-  const vendors = VENDORS
+  const shown = vendors
     .filter(v => v.area === area && (!food || v.sells.includes(food)))
     .sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
 
   listEl.replaceChildren();
-  if (!vendors.length) {
+  if (!shown.length) {
     countEl.textContent = "";
     listEl.append(el("p", "empty", "No vendors found. Try another food or area."));
     return;
   }
-  countEl.textContent = vendors.length + (vendors.length === 1 ? " vendor" : " vendors");
-  vendors.forEach(v => listEl.append(card(v)));
+  countEl.textContent = shown.length + (shown.length === 1 ? " vendor" : " vendors");
+  shown.forEach(v => listEl.append(card(v)));
 }
 
-setupAreas();
-setupFilters();
-render();
+(async function start() {
+  await loadData();
+  setupAreas();
+  setupFilters();
+  render();
+})();

@@ -106,6 +106,65 @@ select {
 
 .empty { padding: 24px 0; text-align: center; color: #555; }
 
+input[type="text"], input[type="tel"], input:not([type]), textarea {
+  width: 100%;
+  font-size: 18px;
+  padding: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-family: inherit;
+}
+
+.big, .danger {
+  display: block;
+  width: 100%;
+  font-size: 20px;
+  font-weight: bold;
+  padding: 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  margin: 8px 0 16px;
+}
+.big:disabled { opacity: 0.5; }
+.danger { background: var(--paper); color: var(--ink); border: 2px solid var(--ink); font-size: 16px; }
+
+.link {
+  display: block;
+  width: 100%;
+  background: none;
+  border: 0;
+  padding: 14px;
+  font-size: 16px;
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.switch {
+  display: block;
+  width: 100%;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 22px;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+}
+.switch[aria-pressed="true"] { background: var(--ink); color: #fff; }
+
+.hint { font-weight: normal; font-size: 14px; color: #555; }
+.ticks { margin-bottom: 8px; }
+.tick { display: block; font-weight: normal; padding: 10px 0; }
+.tick input { width: 24px; height: 24px; vertical-align: middle; margin-right: 8px; }
+
+.msg { min-height: 1.4em; margin: 0 0 12px; }
+.msg.bad { color: #b00020; font-weight: bold; }
+
+footer a { color: inherit; }
+
 footer {
   padding: 16px;
   font-size: 14px;
