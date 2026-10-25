@@ -29,3 +29,7 @@ If a vendor forgets their password: Authentication > Users, find `2567...@vendor
 ## Deploy to Cloudflare Pages
 Connect the git repo. Build command `node build.js`, output folder `dist`.
 Add `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `DEFAULT_COUNTRY_CODE` under Settings > Variables.
+
+## Cloudflare Workers (what is deployed now)
+`wrangler.jsonc` serves the `dist` folder. In the Worker's Settings > Build set the build command to `node build.js`
+(deploy command stays `npx wrangler deploy`) and add the three variables as *build* variables.
