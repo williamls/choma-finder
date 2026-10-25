@@ -17,10 +17,14 @@ Run `node build.js` again after any change. With no `.env`, the customer page sh
 4. Authentication > Sign In / Providers > Email: keep Email on, turn OFF "Confirm email". (Vendors log in with phone number + password, so no SMS is paid for. Do not enable the Phone provider.)
 5. If you ran an older schema.sql before manual approval existed, also run `supabase/migrate-manual-approval.sql`.
 
-## Approving vendors (by hand, no SMS)
-A new listing is hidden until approved. Call or WhatsApp the number they gave, then in Supabase
-Table Editor > vendors, tick `approved` on that row. (The admin screen in step 3 will do this for you.)
-If a vendor forgets their password: Authentication > Users, find `2567...@vendors.example.com`, and set a new one.
+## Admin (you)
+1. Run `supabase/admin.sql` in the SQL Editor (after schema.sql).
+2. Authentication > Users > Add user: your email and a strong password, tick "Auto Confirm User".
+3. Run: `insert into admins select id from auth.users where email = 'you@example.com';`
+4. Open `/admin.html`, log in. There you approve new listings (call the vendor first), hide or delete listings,
+   set a Featured end date (max 3 per area), and add, rename, reorder or delete areas.
+The admin password lives in Supabase, never in this code. Do not put it in `.env`.
+If a vendor forgets their password: Authentication > Users, find `2567...@vendors.example.com`, set a new one.
 
 ## Deploy to Cloudflare Pages
 Connect the git repo. Build command `node build.js`, output folder `dist`.
