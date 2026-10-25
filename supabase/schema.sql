@@ -24,6 +24,7 @@ create table vendors (
   available_date date,          -- "Available today" means this equals today_local(), so it resets itself
   featured_until date,          -- set by admin (step 3)
   hidden         boolean not null default false,  -- set by admin (step 3)
+  approved       boolean not null default false,  -- you set this to true after checking the vendor by phone
   created_at     timestamptz not null default now()
 );
 
@@ -61,8 +62,20 @@ select v.id, v.name, v.phone, a.name as area, v.sells, v.note, v.delivers,
        coalesce(v.available_date = today_local(), false) as available,
        coalesce(v.featured_until >= today_local(), false) as featured
 from vendors v join areas a on a.id = v.area_id
-where not v.hidden;
+where v.approved and not v.hidden;
 grant select on listings to anon, authenticated;
+
+-- If a vendor changes their business name or phone number, it needs approving again.
+create function reset_approval() returns trigger
+language plpgsql as $$
+begin
+  if auth.uid() = old.owner_id and (new.name <> old.name or new.phone <> old.phone) then
+    new.approved := false;
+  end if;
+  return new;
+end $$;
+create trigger vendors_reset_approval before update on vendors
+for each row execute function reset_approval();
 
 -- A vendor's own listing, plus whether it is switched on today.
 create view my_listing with (security_invoker = true) as
@@ -80,7 +93,7 @@ grant execute on function set_available(boolean) to authenticated;
 
 create function log_call(vendor bigint) returns void
 language sql security definer set search_path = public as $$
-  insert into call_taps (vendor_id) select id from vendors where id = vendor and not hidden;
+  insert into call_taps (vendor_id) select id from vendors where id = vendor and approved and not hidden;
 $$;
 grant execute on function log_call(bigint) to anon, authenticated;
 

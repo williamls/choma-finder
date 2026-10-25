@@ -1,7 +1,7 @@
 const $ = id => document.getElementById(id);
-const steps = ["step-phone", "step-code", "step-listing"];
+const steps = ["step-login", "step-listing"];
 
-let loginPhone = "";
+let signingUp = false;
 let listing = null; // the vendor's saved row, or null if they have none yet
 
 function show(step) {
@@ -27,34 +27,52 @@ async function busy(btn, fn) {
   try { await fn(); } finally { btn.disabled = false; }
 }
 
-// ---- Sign in ----
+// ---- Sign in (phone number + password, no SMS) ----
+// Supabase logs in by email, so the phone number becomes a hidden login name. No email is ever sent.
+const emailFor = phone => toE164(phone).replace("+", "") + "@vendors.example.com";
 
-$("send-code").addEventListener("click", e => busy(e.target, async () => {
+function setMode(up) {
+  signingUp = up;
+  $("login-title").textContent = up ? "Create an account" : "Log in";
+  $("login-go").textContent = up ? "Create account" : "Log in";
+  $("login-switch").textContent = up ? "Already have an account? Log in" : "New here? Create an account";
+  $("pass-hint").textContent = up ? "(at least 6 characters, write it down)" : "";
+  $("login-pass").autocomplete = up ? "new-password" : "current-password";
   say();
-  const phone = toE164($("login-phone").value);
-  if (phone.length < 9) return say("Please enter your phone number.", true);
-  const { error } = await db.auth.signInWithOtp({ phone });
-  if (error) return say("Could not send the code. " + error.message, true);
-  loginPhone = phone;
-  say("We sent a code to " + phone + ".");
-  show("step-code");
-  $("code").focus();
-}));
+}
+$("login-switch").addEventListener("click", () => setMode(!signingUp));
 
-$("check-code").addEventListener("click", e => busy(e.target, async () => {
+$("login-go").addEventListener("click", e => busy(e.target, async () => {
   say();
-  const { error } = await db.auth.verifyOtp({ phone: loginPhone, token: $("code").value.trim(), type: "sms" });
-  if (error) return say("That code did not work. Check it and try again.", true);
+  const phone = $("login-phone").value;
+  const password = $("login-pass").value;
+  if (toE164(phone).length < 9) return say("Please enter your phone number.", true);
+  if (password.length < 6) return say("Password must be at least 6 characters.", true);
+  const creds = { email: emailFor(phone), password };
+
+  if (signingUp) {
+    const { data, error } = await db.auth.signUp(creds);
+    if (error) {
+      return say(/registered|exists/i.test(error.message)
+        ? "This number already has an account. Tap Log in."
+        : "Could not create the account. " + error.message, true);
+    }
+    // No session means Supabase still wants an email confirmation: see README step 4.
+    if (!data.session) return say("Setup problem: turn off 'Confirm email' in Supabase.", true);
+  } else {
+    const { error } = await db.auth.signInWithPassword(creds);
+    if (error) return say("Wrong phone number or password.", true);
+  }
   say();
   await openListing();
 }));
 
-$("back").addEventListener("click", () => { say(); show("step-phone"); });
-
 $("logout").addEventListener("click", async () => {
   await db.auth.signOut();
+  $("login-pass").value = "";
+  setMode(false);
   say("You are logged out.");
-  show("step-phone");
+  show("step-login");
 });
 
 // ---- Listing ----
@@ -85,6 +103,13 @@ function fillForm() {
   $("form-title").textContent = v ? "Your listing" : "Create your listing";
   $("remove").hidden = !v;
   $("available-box").hidden = !v;
+  $("status").hidden = !v;
+  if (v) {
+    $("status").textContent = v.approved
+      ? "Approved. Customers can see your listing."
+      : "Waiting for approval. We will call you on " + v.phone + " to confirm. Customers cannot see you until then.";
+    $("status").className = "status" + (v.approved ? " ok" : "");
+  }
   showAvailable(v ? v.available_today : false);
   countLeft();
 }
@@ -161,5 +186,5 @@ $("remove").addEventListener("click", e => busy(e.target, async () => {
 
   const { data: session } = await db.auth.getSession();
   if (session.session) await openListing();
-  else show("step-phone");
+  else show("step-login");
 })();

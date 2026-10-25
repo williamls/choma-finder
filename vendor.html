@@ -15,23 +15,20 @@
   <main>
     <p id="msg" class="msg" role="status"></p>
 
-    <!-- 1. Phone number -->
-    <section id="step-phone" hidden>
+    <!-- 1. Log in or create an account -->
+    <section id="step-login" hidden>
+      <h2 id="login-title">Log in</h2>
       <label for="login-phone">Your phone number</label>
       <input id="login-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0700 000 000">
-      <button id="send-code" class="big" type="button">Send me a code</button>
+      <label for="login-pass">Password <span id="pass-hint" class="hint"></span></label>
+      <input id="login-pass" type="password" autocomplete="current-password" minlength="6">
+      <button id="login-go" class="big" type="button">Log in</button>
+      <button id="login-switch" class="link" type="button">New here? Create an account</button>
     </section>
 
-    <!-- 2. SMS code -->
-    <section id="step-code" hidden>
-      <label for="code">Code from the SMS</label>
-      <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8">
-      <button id="check-code" class="big" type="button">Log in</button>
-      <button id="back" class="link" type="button">Use a different number</button>
-    </section>
-
-    <!-- 3. Listing -->
+    <!-- 2. Listing -->
     <section id="step-listing" hidden>
+      <p id="status" class="status" hidden></p>
       <div id="available-box" hidden>
         <button id="available" class="switch" type="button" aria-pressed="false">
           <span id="available-text">Available today: OFF</span>

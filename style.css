@@ -160,6 +160,18 @@ input[type="text"], input[type="tel"], input:not([type]), textarea {
 .tick { display: block; font-weight: normal; padding: 10px 0; }
 .tick input { width: 24px; height: 24px; vertical-align: middle; margin-right: 8px; }
 
+input[type="password"] {
+  width: 100%;
+  font-size: 18px;
+  padding: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.status { padding: 12px; border: 2px solid var(--accent); border-radius: 8px; margin: 0 0 16px; }
+.status.ok { border-color: var(--ink); background: var(--grey); }
+
 .msg { min-height: 1.4em; margin: 0 0 12px; }
 .msg.bad { color: #b00020; font-weight: bold; }
 
