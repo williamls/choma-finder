@@ -13,9 +13,9 @@ function say(text, bad) {
   $("msg").className = "msg" + (bad ? " bad" : "");
 }
 
-// Turn 0700 000 000 into +254700000000 using DEFAULT_COUNTRY_CODE.
+// Turn 0700 000 000 into +256700000000 using DEFAULT_COUNTRY_CODE.
 function toE164(input) {
-  const cc = CONFIG.DEFAULT_COUNTRY_CODE || "+254";
+  const cc = CONFIG.DEFAULT_COUNTRY_CODE || "+256";
   const digits = input.replace(/[^\d+]/g, "");
   if (digits.startsWith("+")) return digits;
   if (digits.startsWith("00")) return "+" + digits.slice(2);

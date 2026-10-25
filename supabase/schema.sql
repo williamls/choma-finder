@@ -1,8 +1,8 @@
 -- Choma Finder database. Paste into Supabase > SQL Editor > Run (safe to run once on a new project).
 
--- Change this if your town is not in East Africa Time. It decides when "Available today" rolls over.
+-- Uganda time. Change the zone below if you launch elsewhere. It decides when "Available today" rolls over.
 create function today_local() returns date
-language sql stable as $$ select (now() at time zone 'Africa/Nairobi')::date $$;
+language sql stable as $$ select (now() at time zone 'Africa/Kampala')::date $$;
 
 create table areas (
   id   int generated always as identity primary key,
